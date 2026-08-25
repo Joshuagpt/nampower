@@ -789,8 +789,8 @@ namespace Nampower {
             gUserSettings.channelLatencyReductionPercentage = atoi(value);
             DEBUG_LOG(
                 "Set NP_ChannelLatencyReductionPercentage to " << gUserSettings.channelLatencyReductionPercentage);
+        }
         // NP_NameplateDistance / NP_ChatBubbleDistance removed (feature stripped)
-
     }
 
     int Script_SetCVarHook(hadesmem::PatchDetourBase *detour, uintptr_t *luaState) {
