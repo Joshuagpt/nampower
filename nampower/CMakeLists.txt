@@ -14,8 +14,6 @@ set(SOURCE_FILES
         game.cpp
         main.hpp
         main.cpp
-        chat.hpp
-        chat.cpp
         offsets.hpp
         helper.cpp
         helper.hpp

@@ -34,7 +34,6 @@
 #include "spellevents.hpp"
 #include "spellcast.hpp"
 #include "misc_scripts.hpp"
-#include "chat.hpp"
 #include "file_scripts.hpp"
 #include "spell_scripts.hpp"
 #include "player_scripts.hpp"
@@ -165,7 +164,6 @@ namespace Nampower {
     std::unique_ptr<hadesmem::PatchDetour<GetSpellSlotFromLuaT> > gGetSpellSlotFromLuaDetour;
 
     std::unique_ptr<hadesmem::PatchDetour<LuaScriptT> > gCSimpleFrame_GetNameDetour;
-    std::unique_ptr<hadesmem::PatchDetour<CGUnit_C_AddChatBubbleT> > gCGUnit_C_AddChatBubbleDetour;
     std::unique_ptr<hadesmem::PatchDetour<CSimpleTop_OnKeyDownT> > gCSimpleTop_OnKeyDownDetour;
     std::unique_ptr<hadesmem::PatchDetour<CSimpleTop_OnKeyUpT> > gCSimpleTop_OnKeyUpDetour;
     std::unique_ptr<hadesmem::PatchDetour<GetGUIDFromNameT> > gGetGUIDFromNameDetour;
@@ -791,16 +789,8 @@ namespace Nampower {
             gUserSettings.channelLatencyReductionPercentage = atoi(value);
             DEBUG_LOG(
                 "Set NP_ChannelLatencyReductionPercentage to " << gUserSettings.channelLatencyReductionPercentage);
-        } else if (strcmp(cvar, "NP_NameplateDistance") == 0) {
-            auto distance = std::stof(value);
-            SetNameplateDistance(distance);
-            DEBUG_LOG(
-                "Set NP_NameplateDistance to " << distance);
-        } else if (strcmp(cvar, "NP_ChatBubbleDistance") == 0) {
-            gUserSettings.chatBubbleDistance = static_cast<uint32_t>(atoi(value));
-            SetChatBubbleDistance(static_cast<float>(gUserSettings.chatBubbleDistance));
-            DEBUG_LOG("Set NP_ChatBubbleDistance to " << gUserSettings.chatBubbleDistance);
-        }
+        // NP_NameplateDistance / NP_ChatBubbleDistance removed (feature stripped)
+
     }
 
     int Script_SetCVarHook(hadesmem::PatchDetourBase *detour, uintptr_t *luaState) {
@@ -1325,55 +1315,8 @@ namespace Nampower {
                      0, // unk2
                      0); // unk3
 
-        char NP_NameplateDistance[] = "NP_NameplateDistance";
-        CVarRegister(NP_NameplateDistance, // name
-                     nullptr, // help
-                     0, // unk1
-                     std::to_string(GetNameplateDistance()).c_str(), // use the game's DAT value as the default
-                     nullptr, // callback
-                     1, // category
-                     0, // unk2
-                     0); // unk3
+        // Nameplate distance + chat bubble CVars removed (feature stripped)
 
-        char NP_ChatBubbleDistance[] = "NP_ChatBubbleDistance";
-        CVarRegister(NP_ChatBubbleDistance, // name
-                     nullptr, // help
-                     0, // unk1
-                     std::to_string(GetChatBubbleDistance()).c_str(), // use game's value as default
-                     nullptr, // callback
-                     1, // category
-                     0, // unk2
-                     0); // unk3
-
-        char NP_ChatBubblesWhisper[] = "NP_ChatBubblesWhisper";
-        CVarRegister(NP_ChatBubblesWhisper, // name
-                     nullptr, // help
-                     0, // unk1
-                     "0", // default value address
-                     nullptr, // callback
-                     1, // category
-                     0, // unk2
-                     0); // unk3
-
-        char NP_ChatBubblesRaid[] = "NP_ChatBubblesRaid";
-        CVarRegister(NP_ChatBubblesRaid, // name
-                     nullptr, // help
-                     0, // unk1
-                     "0", // default value address
-                     nullptr, // callback
-                     1, // category
-                     0, // unk2
-                     0); // unk3
-
-        char NP_ChatBubblesBattleground[] = "NP_ChatBubblesBattleground";
-        CVarRegister(NP_ChatBubblesBattleground, // name
-                     nullptr, // help
-                     0, // unk1
-                     "0", // default value address
-                     nullptr, // callback
-                     1, // category
-                     0, // unk2
-                     0); // unk3
 
         char NP_EnableLocalSetRaidTarget[] = "NP_EnableLocalSetRaidTarget";
         CVarRegister(NP_EnableLocalSetRaidTarget, // name
@@ -1439,10 +1382,7 @@ namespace Nampower {
 
         loadUserVar("NP_ChannelLatencyReductionPercentage");
 
-        loadUserVar("NP_NameplateDistance");
-        loadUserVar("NP_ChatBubbleDistance");
-        loadUserVar("EnableLocalSetRaidTarget");
-        loadUserVar("NP_ChatBubblesBattleground");
+        // Nameplate distance + chat bubble CVars stripped
 
         gBufferTimeMs = gUserSettings.minBufferTimeMs;
     }
@@ -1624,8 +1564,7 @@ namespace Nampower {
             &AttackRoundInfo_ReadPacketHook);
         gCSimpleFrame_GetNameDetour = createHook<LuaScriptT>(process, Offsets::CSimpleFrame_GetName,
                                                              &CSimpleFrame_GetNameHook);
-        gCGUnit_C_AddChatBubbleDetour = createHook<CGUnit_C_AddChatBubbleT>(
-            process, Offsets::CGUnit_C_AddChatBubble, &CGUnit_C_AddChatBubbleHook);
+        // Chat bubble hook removed (feature stripped)
         gCSimpleTop_OnKeyDownDetour = createHook<CSimpleTop_OnKeyDownT>(
             process, Offsets::CSimpleTop_OnKeyDown, &CSimpleTop_OnKeyDownHook);
         gCSimpleTop_OnKeyUpDetour = createHook<CSimpleTop_OnKeyUpT>(
@@ -1660,7 +1599,7 @@ namespace Nampower {
             process, Offsets::FrameScript_Object_RegisterScriptEvent, &FrameScript_Object_RegisterScriptEventHook);
         gSetEventCountDetour = createHook<FramescriptSetEventCountT>(process, Offsets::Framescript_SetEventCount,
                                                                      &Framescript_SetEventCountHook);
-        ApplyOnChatMessagePatch();
+        // OnChatMessage bubble GUID patch removed (feature stripped)
 
         DEBUG_LOG("=== All hooks initialized successfully ===");
     }
