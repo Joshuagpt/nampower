@@ -103,9 +103,18 @@ namespace Nampower {
     }
 
     uintptr_t *GetBagPtrFromContainer(uintptr_t *containerPtr) {
+        if (!containerPtr) {
+            return nullptr;
+        }
         auto vftable = game::GetObjectVFTable(containerPtr);
-        using GetBagPtrT = uintptr_t * (__thiscall *)(uintptr_t *);
+        if (!vftable) {
+            return nullptr;
+        }
+        using GetBagPtrT = uintptr_t *(__thiscall *)(uintptr_t *);
         auto getBagPtrFunc = reinterpret_cast<GetBagPtrT>(vftable[4]);
+        if (!getBagPtrFunc) {
+            return nullptr;
+        }
         return getBagPtrFunc(containerPtr);
     }
 

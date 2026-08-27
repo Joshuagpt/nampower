@@ -87,11 +87,25 @@ namespace game {
 
 
     std::uint32_t GetCastTime(void *unit, uint32_t spellId) {
+        // Zone transitions / instance exit can invoke cast hooks after the caster
+        // object has already been destroyed. Calling through a null this-pointer
+        // hits vtable+0xB4 (GetCastingTimeIndex=0x2D) and raises ERROR #132.
+        if (!unit) {
+            return 0;
+        }
+
         auto const vmt = *reinterpret_cast<std::uint8_t **>(unit);
+        if (!vmt) {
+            return 0;
+        }
+
         int
         (__thiscall *getSpellCastingTime)(void *, uint32_t) = *reinterpret_cast<decltype(&getSpellCastingTime)>(vmt +
                                                                                                                 4 *
                                                                                                                 static_cast<std::uint32_t>(Offsets::GetCastingTimeIndex));
+        if (!getSpellCastingTime) {
+            return 0;
+        }
 
         return getSpellCastingTime(unit, spellId);
     }
@@ -143,6 +157,9 @@ namespace game {
     }
 
     uintptr_t *GetObjectVFTable(uintptr_t *unit) {
+        if (!unit) {
+            return nullptr;
+        }
         // Dereference once to get vtable pointer
         return *reinterpret_cast<uintptr_t **>(unit);
     }
@@ -185,9 +202,19 @@ namespace game {
     }
 
     C3Vector UnitGetPosition(uintptr_t *unit) {
-        using GetPositionT = C3Vector* (__fastcall *)(void *thisptr, void *dummy_edx, C3Vector *outPos);
-        auto getPos = reinterpret_cast<GetPositionT>((*reinterpret_cast<void ***>(unit))[5]); // vtable[0x14/4]
         C3Vector pos{};
+        if (!unit) {
+            return pos;
+        }
+        auto **vtable = *reinterpret_cast<void ****>(unit);
+        if (!vtable) {
+            return pos;
+        }
+        using GetPositionT = C3Vector *(__fastcall *)(void *thisptr, void *dummy_edx, C3Vector *outPos);
+        auto getPos = reinterpret_cast<GetPositionT>(vtable[5]); // vtable[0x14/4]
+        if (!getPos) {
+            return pos;
+        }
         getPos(unit, nullptr, &pos);
         return pos;
     }

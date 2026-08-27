@@ -237,19 +237,47 @@ namespace Nampower {
         gLastCastData.startTimeMs = currentTime;
     }
 
+    // Prefer a live player object pointer when flushing the queue. Stored casterUnit
+    // can be dangling after instance exit / zone change and was the source of ERROR #132
+    // (null this -> vtable+0xB4 GetCastTime).
+    static uint32_t *ResolveLiveCasterUnit(uint32_t *storedCaster) {
+        auto playerGuid = game::ClntObjMgrGetActivePlayerGuid();
+        if (playerGuid == 0) {
+            return nullptr;
+        }
+        auto *playerUnit = game::GetObjectPtr(playerGuid);
+        if (!playerUnit) {
+            return nullptr;
+        }
+        // If the stored pointer still matches the live player, keep it; otherwise replace.
+        if (storedCaster && storedCaster == reinterpret_cast<uint32_t *>(playerUnit)) {
+            return storedCaster;
+        }
+        return reinterpret_cast<uint32_t *>(playerUnit);
+    }
+
     void CastQueuedNonGcdSpell() {
         if (gCastData.nonGcdSpellQueued) {
             auto nonGcdCastParams = gNonGcdCastQueue.pop();
             if (nonGcdCastParams.spellId > 0) {
-                DEBUG_LOG("Triggering queued non gcd cast of " << game::GetSpellName(nonGcdCastParams.spellId));
+                auto *caster = ResolveLiveCasterUnit(nonGcdCastParams.casterUnit);
+                if (!caster) {
+                    DEBUG_LOG("Dropping queued non gcd cast of "
+                              << game::GetSpellName(nonGcdCastParams.spellId)
+                              << " — no live caster (zone change?)");
+                    gLastCastData.wasQueued = false;
+                } else {
+                    DEBUG_LOG("Triggering queued non gcd cast of "
+                              << game::GetSpellName(nonGcdCastParams.spellId));
 
-                gCastData.castingQueuedSpell = true;
-                gCastData.targetingSpellQueued = false; // make sure this is off so SendCast is allowed
-                gCastData.targetingSpellId = 0;
-                gCastData.numRetries = nonGcdCastParams.numRetries;
-                Spell_C_CastSpellHook(castSpellDetour, nonGcdCastParams.casterUnit, nonGcdCastParams.spellId,
-                                      nonGcdCastParams.item, nonGcdCastParams.guid);
-                gLastCastData.wasQueued = true;
+                    gCastData.castingQueuedSpell = true;
+                    gCastData.targetingSpellQueued = false; // make sure this is off so SendCast is allowed
+                    gCastData.targetingSpellId = 0;
+                    gCastData.numRetries = nonGcdCastParams.numRetries;
+                    Spell_C_CastSpellHook(castSpellDetour, caster, nonGcdCastParams.spellId,
+                                          nonGcdCastParams.item, nonGcdCastParams.guid);
+                    gLastCastData.wasQueued = true;
+                }
             } else {
                 DEBUG_LOG("Ignoring queued non gcd cast, no spell id");
                 gLastCastData.wasQueued = false;
@@ -266,14 +294,23 @@ namespace Nampower {
     void CastQueuedNormalSpell() {
         if (gCastData.normalSpellQueued) {
             if (gLastNormalCastParams.spellId > 0) {
-                DEBUG_LOG("Triggering queued cast of " << game::GetSpellName(gLastNormalCastParams.spellId));
-                gCastData.castingQueuedSpell = true;
-                gCastData.targetingSpellQueued = false; // make sure this is off so SendCast is allowed
-                gCastData.targetingSpellId = 0;
-                gCastData.numRetries = gLastNormalCastParams.numRetries;
-                Spell_C_CastSpellHook(castSpellDetour, gLastNormalCastParams.casterUnit, gLastNormalCastParams.spellId,
-                                               gLastNormalCastParams.item, gLastNormalCastParams.guid);
-                gLastCastData.wasQueued = true;
+                auto *caster = ResolveLiveCasterUnit(gLastNormalCastParams.casterUnit);
+                if (!caster) {
+                    DEBUG_LOG("Dropping queued cast of "
+                              << game::GetSpellName(gLastNormalCastParams.spellId)
+                              << " — no live caster (zone change?)");
+                    gLastCastData.wasQueued = false;
+                } else {
+                    DEBUG_LOG("Triggering queued cast of "
+                              << game::GetSpellName(gLastNormalCastParams.spellId));
+                    gCastData.castingQueuedSpell = true;
+                    gCastData.targetingSpellQueued = false; // make sure this is off so SendCast is allowed
+                    gCastData.targetingSpellId = 0;
+                    gCastData.numRetries = gLastNormalCastParams.numRetries;
+                    Spell_C_CastSpellHook(castSpellDetour, caster, gLastNormalCastParams.spellId,
+                                          gLastNormalCastParams.item, gLastNormalCastParams.guid);
+                    gLastCastData.wasQueued = true;
+                }
             } else {
                 DEBUG_LOG("Ignoring queued cast, no spell id");
                 gLastCastData.wasQueued = false;
@@ -281,9 +318,9 @@ namespace Nampower {
             TriggerSpellQueuedEvent(NORMAL_QUEUE_POPPED, gLastNormalCastParams.spellId);
             gCastData.normalSpellQueued = false;
             gCastData.castingQueuedSpell = false;
-                gCastData.targetingSpellQueued = false;
-                gCastData.targetingSpellId = 0;
-                gCastData.numRetries = 0;
+            gCastData.targetingSpellQueued = false;
+            gCastData.targetingSpellId = 0;
+            gCastData.numRetries = 0;
         }
     }
 
@@ -457,6 +494,13 @@ namespace Nampower {
 
         // clear flag to avoid canceling spell cast due to cooldown
         gCastData.ignoreCancelDueToCooldown = false;
+
+        // During instance exit / zone change the caster object may already be gone
+        // while a queued cast is still flushed. Never touch a null caster in our logic.
+        if (!casterUnit) {
+            auto const castSpell = detour->GetTrampolineT<Spell_C_CastSpellT>();
+            return castSpell(casterUnit, spellId, item, guid);
+        }
 
         auto playerGuid = game::ClntObjMgrGetActivePlayerGuid();
         auto playerUnit = (playerGuid > 0) ? game::GetObjectPtr(playerGuid) : nullptr;
