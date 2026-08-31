@@ -50,7 +50,10 @@ struct UserSettings {
     bool enableLocalSetRaidTarget = true;
 
     // World / nameplate QoL (ported from UnitXP_SP3, optional)
+    bool noWeather = false;       // master: block rain + snow + sandstorm
     bool noRain = false;
+    bool noSnow = false;
+    bool noSandstorm = false;
     bool hideCritterNameplates = false;
 
     uint32_t spellQueueWindowMs = 500;

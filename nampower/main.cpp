@@ -761,9 +761,18 @@ namespace Nampower {
         } else if (strcmp(cvar, "NP_EnableLocalSetRaidTarget") == 0) {
             gUserSettings.enableLocalSetRaidTarget = atoi(value) != 0;
             DEBUG_LOG("Set NP_EnableLocalSetRaidTarget to " << gUserSettings.enableLocalSetRaidTarget);
+        } else if (strcmp(cvar, "NP_NoWeather") == 0) {
+            gUserSettings.noWeather = atoi(value) != 0;
+            DEBUG_LOG("Set NP_NoWeather to " << gUserSettings.noWeather);
         } else if (strcmp(cvar, "NP_NoRain") == 0) {
             gUserSettings.noRain = atoi(value) != 0;
             DEBUG_LOG("Set NP_NoRain to " << gUserSettings.noRain);
+        } else if (strcmp(cvar, "NP_NoSnow") == 0) {
+            gUserSettings.noSnow = atoi(value) != 0;
+            DEBUG_LOG("Set NP_NoSnow to " << gUserSettings.noSnow);
+        } else if (strcmp(cvar, "NP_NoSandstorm") == 0) {
+            gUserSettings.noSandstorm = atoi(value) != 0;
+            DEBUG_LOG("Set NP_NoSandstorm to " << gUserSettings.noSandstorm);
         } else if (strcmp(cvar, "NP_HideCritterNameplates") == 0) {
             gUserSettings.hideCritterNameplates = atoi(value) != 0;
             DEBUG_LOG("Set NP_HideCritterNameplates to " << gUserSettings.hideCritterNameplates);
@@ -1324,11 +1333,41 @@ namespace Nampower {
 
         // Nameplate distance + chat bubble CVars removed (feature stripped)
 
+        char NP_NoWeather[] = "NP_NoWeather";
+        CVarRegister(NP_NoWeather,
+                     nullptr,
+                     0,
+                     gUserSettings.noWeather ? defaultTrue : defaultFalse,
+                     nullptr,
+                     1,
+                     0,
+                     0);
+
         char NP_NoRain[] = "NP_NoRain";
         CVarRegister(NP_NoRain,
                      nullptr,
                      0,
                      gUserSettings.noRain ? defaultTrue : defaultFalse,
+                     nullptr,
+                     1,
+                     0,
+                     0);
+
+        char NP_NoSnow[] = "NP_NoSnow";
+        CVarRegister(NP_NoSnow,
+                     nullptr,
+                     0,
+                     gUserSettings.noSnow ? defaultTrue : defaultFalse,
+                     nullptr,
+                     1,
+                     0,
+                     0);
+
+        char NP_NoSandstorm[] = "NP_NoSandstorm";
+        CVarRegister(NP_NoSandstorm,
+                     nullptr,
+                     0,
+                     gUserSettings.noSandstorm ? defaultTrue : defaultFalse,
                      nullptr,
                      1,
                      0,
@@ -1370,7 +1409,10 @@ namespace Nampower {
         loadUserVar("NP_ReplaceMatchingNonGcdCategory");
         loadUserVar("NP_OptimizeBufferUsingPacketTimings");
         loadUserVar("NP_EnableLocalSetRaidTarget");
+        loadUserVar("NP_NoWeather");
         loadUserVar("NP_NoRain");
+        loadUserVar("NP_NoSnow");
+        loadUserVar("NP_NoSandstorm");
         loadUserVar("NP_HideCritterNameplates");
 
         loadUserVar("NP_PreventRightClickTargetChange");
