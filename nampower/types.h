@@ -49,6 +49,10 @@ struct UserSettings {
     bool enableEnhancedTooltips = true;
     bool enableLocalSetRaidTarget = true;
 
+    // World / nameplate QoL (ported from UnitXP_SP3, optional)
+    bool noRain = false;
+    bool hideCritterNameplates = false;
+
     uint32_t spellQueueWindowMs = 500;
     uint32_t onSwingBufferCooldownMs = 500;
     uint32_t channelQueueWindowMs = 1500;

@@ -51,6 +51,7 @@
 #include "pet.hpp"
 #include "tooltip.hpp"
 #include "quest.hpp"
+#include "world_visuals.hpp"
 
 #include <cstdint>
 #include <memory>
@@ -760,6 +761,12 @@ namespace Nampower {
         } else if (strcmp(cvar, "NP_EnableLocalSetRaidTarget") == 0) {
             gUserSettings.enableLocalSetRaidTarget = atoi(value) != 0;
             DEBUG_LOG("Set NP_EnableLocalSetRaidTarget to " << gUserSettings.enableLocalSetRaidTarget);
+        } else if (strcmp(cvar, "NP_NoRain") == 0) {
+            gUserSettings.noRain = atoi(value) != 0;
+            DEBUG_LOG("Set NP_NoRain to " << gUserSettings.noRain);
+        } else if (strcmp(cvar, "NP_HideCritterNameplates") == 0) {
+            gUserSettings.hideCritterNameplates = atoi(value) != 0;
+            DEBUG_LOG("Set NP_HideCritterNameplates to " << gUserSettings.hideCritterNameplates);
         } else if (strcmp(cvar, "NP_MinBufferTimeMs") == 0) {
             gUserSettings.minBufferTimeMs = atoi(value);
             DEBUG_LOG("Set NP_MinBufferTimeMs and current buffer to " << gUserSettings.minBufferTimeMs);
@@ -1317,6 +1324,25 @@ namespace Nampower {
 
         // Nameplate distance + chat bubble CVars removed (feature stripped)
 
+        char NP_NoRain[] = "NP_NoRain";
+        CVarRegister(NP_NoRain,
+                     nullptr,
+                     0,
+                     gUserSettings.noRain ? defaultTrue : defaultFalse,
+                     nullptr,
+                     1,
+                     0,
+                     0);
+
+        char NP_HideCritterNameplates[] = "NP_HideCritterNameplates";
+        CVarRegister(NP_HideCritterNameplates,
+                     nullptr,
+                     0,
+                     gUserSettings.hideCritterNameplates ? defaultTrue : defaultFalse,
+                     nullptr,
+                     1,
+                     0,
+                     0);
 
         char NP_EnableLocalSetRaidTarget[] = "NP_EnableLocalSetRaidTarget";
         CVarRegister(NP_EnableLocalSetRaidTarget, // name
@@ -1344,6 +1370,8 @@ namespace Nampower {
         loadUserVar("NP_ReplaceMatchingNonGcdCategory");
         loadUserVar("NP_OptimizeBufferUsingPacketTimings");
         loadUserVar("NP_EnableLocalSetRaidTarget");
+        loadUserVar("NP_NoRain");
+        loadUserVar("NP_HideCritterNameplates");
 
         loadUserVar("NP_PreventRightClickTargetChange");
 
@@ -1600,6 +1628,8 @@ namespace Nampower {
         gSetEventCountDetour = createHook<FramescriptSetEventCountT>(process, Offsets::Framescript_SetEventCount,
                                                                      &Framescript_SetEventCountHook);
         // OnChatMessage bubble GUID patch removed (feature stripped)
+
+        InstallWorldVisualHooks(process);
 
         DEBUG_LOG("=== All hooks initialized successfully ===");
     }
