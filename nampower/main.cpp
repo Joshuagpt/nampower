@@ -761,9 +761,6 @@ namespace Nampower {
         } else if (strcmp(cvar, "NP_EnableLocalSetRaidTarget") == 0) {
             gUserSettings.enableLocalSetRaidTarget = atoi(value) != 0;
             DEBUG_LOG("Set NP_EnableLocalSetRaidTarget to " << gUserSettings.enableLocalSetRaidTarget);
-        } else if (strcmp(cvar, "NP_NoWeather") == 0) {
-            gUserSettings.noWeather = atoi(value) != 0;
-            DEBUG_LOG("Set NP_NoWeather to " << gUserSettings.noWeather);
         } else if (strcmp(cvar, "NP_NoRain") == 0) {
             gUserSettings.noRain = atoi(value) != 0;
             DEBUG_LOG("Set NP_NoRain to " << gUserSettings.noRain);
@@ -1333,16 +1330,6 @@ namespace Nampower {
 
         // Nameplate distance + chat bubble CVars removed (feature stripped)
 
-        char NP_NoWeather[] = "NP_NoWeather";
-        CVarRegister(NP_NoWeather,
-                     nullptr,
-                     0,
-                     gUserSettings.noWeather ? defaultTrue : defaultFalse,
-                     nullptr,
-                     1,
-                     0,
-                     0);
-
         char NP_NoRain[] = "NP_NoRain";
         CVarRegister(NP_NoRain,
                      nullptr,
@@ -1409,7 +1396,6 @@ namespace Nampower {
         loadUserVar("NP_ReplaceMatchingNonGcdCategory");
         loadUserVar("NP_OptimizeBufferUsingPacketTimings");
         loadUserVar("NP_EnableLocalSetRaidTarget");
-        loadUserVar("NP_NoWeather");
         loadUserVar("NP_NoRain");
         loadUserVar("NP_NoSnow");
         loadUserVar("NP_NoSandstorm");

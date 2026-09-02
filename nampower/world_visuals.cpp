@@ -26,10 +26,6 @@ namespace Nampower {
         constexpr int CREATURE_TYPE_CRITTER = 8;
 
         bool ShouldBlockWeatherType(int type) {
-            if (gUserSettings.noWeather) {
-                return type == WEATHER_TYPE_RAIN || type == WEATHER_TYPE_SNOW ||
-                       type == WEATHER_TYPE_SANDSTORM;
-            }
             if (type == WEATHER_TYPE_RAIN && gUserSettings.noRain) {
                 return true;
             }
