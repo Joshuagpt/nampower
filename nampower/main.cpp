@@ -38,6 +38,7 @@
 #include "spell_scripts.hpp"
 #include "player_scripts.hpp"
 #include "unit_scripts.hpp"
+#include "insight.hpp"
 #include "spellchannel.hpp"
 #include "helper.hpp"
 #include "items.hpp"
@@ -1984,6 +1985,10 @@ namespace Nampower {
 
         char getNampowerVersion[] = "GetNampowerVersion";
         RegisterLuaFunction(getNampowerVersion, reinterpret_cast<uintptr_t *>(Script_GetNampowerVersion));
+
+        // UnitXP_SP3-style LOS / camera sight (for 3D portraits etc.)
+        char unitInSight[] = "UnitInSight";
+        RegisterLuaFunction(unitInSight, reinterpret_cast<uintptr_t *>(Script_UnitInSight));
 
         char getItemILevel[] = "GetItemLevel";
         RegisterLuaFunction(getItemILevel, reinterpret_cast<uintptr_t *>(Script_GetItemLevel));
