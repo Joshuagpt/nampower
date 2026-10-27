@@ -818,8 +818,8 @@ namespace Nampower {
             if (gUserSettings.timeHour > 24.f) gUserSettings.timeHour = 24.f;
             nampower::timeofday::g_settings.hour = gUserSettings.timeHour;
             DEBUG_LOG("Set NP_TimeHour to " << gUserSettings.timeHour);
-
-}
+        }
+    }
 
     int Script_SetCVarHook(hadesmem::PatchDetourBase *detour, uintptr_t *luaState) {
         auto const cvarSetOrig = gSetCVarDetour->GetTrampolineT<SetCVarT>();
