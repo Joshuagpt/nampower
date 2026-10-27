@@ -64,6 +64,7 @@
 #include <cstring>
 #include <windows.h>
 #include <sys/stat.h>
+#include "timeofday.hpp"
 
 BOOL WINAPI DllMain(HINSTANCE, uint32_t, void *);
 
@@ -649,6 +650,8 @@ namespace Nampower {
 
         gQueuesProcessed = false;
 
+        nampower::timeofday::Apply();
+
         return iSceneEnd(ptr);
     }
 
@@ -802,9 +805,21 @@ namespace Nampower {
             gUserSettings.channelLatencyReductionPercentage = atoi(value);
             DEBUG_LOG(
                 "Set NP_ChannelLatencyReductionPercentage to " << gUserSettings.channelLatencyReductionPercentage);
-        }
         // NP_NameplateDistance / NP_ChatBubbleDistance removed (feature stripped)
-    }
+        } else if (strcmp(cvar, "NP_TimeMode") == 0) {
+            gUserSettings.timeMode = atoi(value);
+            if (gUserSettings.timeMode < 0) gUserSettings.timeMode = 0;
+            if (gUserSettings.timeMode > 2) gUserSettings.timeMode = 2;
+            nampower::timeofday::g_settings.mode = gUserSettings.timeMode;
+            DEBUG_LOG("Set NP_TimeMode to " << gUserSettings.timeMode);
+        } else if (strcmp(cvar, "NP_TimeHour") == 0) {
+            gUserSettings.timeHour = static_cast<float>(atof(value));
+            if (gUserSettings.timeHour < 0.f) gUserSettings.timeHour = 0.f;
+            if (gUserSettings.timeHour > 24.f) gUserSettings.timeHour = 24.f;
+            nampower::timeofday::g_settings.hour = gUserSettings.timeHour;
+            DEBUG_LOG("Set NP_TimeHour to " << gUserSettings.timeHour);
+
+}
 
     int Script_SetCVarHook(hadesmem::PatchDetourBase *detour, uintptr_t *luaState) {
         auto const cvarSetOrig = gSetCVarDetour->GetTrampolineT<SetCVarT>();
@@ -939,6 +954,21 @@ namespace Nampower {
                      5, // category
                      0, // unk2
                      0); // unk3
+
+        
+        char NP_TimeMode[] = "NP_TimeMode";
+        CVarRegister(NP_TimeMode, nullptr, 0,
+                     std::to_string(gUserSettings.timeMode).c_str(),
+                     nullptr, 1, 0, 0);
+
+        char NP_TimeHour[] = "NP_TimeHour";
+        CVarRegister(NP_TimeHour, nullptr, 0,
+                     std::to_string(gUserSettings.timeHour).c_str(),
+                     nullptr, 1, 0, 0);
+
+        nampower::timeofday::g_settings.mode = gUserSettings.timeMode;
+        nampower::timeofday::g_settings.hour = gUserSettings.timeHour;
+        nampower::timeofday::Init();
 
         char NP_QueueInstantSpells[] = "NP_QueueInstantSpells";
         CVarRegister(NP_QueueInstantSpells, // name

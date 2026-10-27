@@ -47,6 +47,10 @@ struct UserSettings {
 
     bool preventMountingWhenBuffCapped = true;
     bool enableEnhancedTooltips = true;
+
+    // Client time of day: 0=server (no override), 1=local PC clock, 2=fixed hour
+    int   timeMode = 0;
+    float timeHour = 12.0f;
     bool enableLocalSetRaidTarget = true;
 
     // World / nameplate QoL (ported from UnitXP_SP3, optional)

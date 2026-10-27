@@ -14,6 +14,7 @@ set(SOURCE_FILES
         game.cpp
         main.hpp
         main.cpp
+    timeofday.cpp
         offsets.hpp
         helper.cpp
         helper.hpp
