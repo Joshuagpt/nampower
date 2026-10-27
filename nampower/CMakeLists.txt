@@ -60,8 +60,6 @@ set(SOURCE_FILES
         quest.hpp
         quest.cpp
         world_visuals.hpp
-        insight.hpp
-        insight.cpp
         world_visuals.cpp
 )
 
