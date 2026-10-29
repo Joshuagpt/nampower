@@ -1431,6 +1431,12 @@ namespace Nampower {
         loadUserVar("NP_NoSandstorm");
         loadUserVar("NP_HideCritterNameplates");
 
+        // NP_TimeMode / NP_TimeHour: push the value loaded from Config.wtf into the
+        // timeofday module. Use the string value (NP_TimeHour is fractional, and
+        // loadUserVar() would truncate it to an int).
+        if (const char *v = GetStringCvar("NP_TimeMode")) updateFromCvar("NP_TimeMode", v);
+        if (const char *v = GetStringCvar("NP_TimeHour")) updateFromCvar("NP_TimeHour", v);
+
         loadUserVar("NP_PreventRightClickTargetChange");
 
         loadUserVar("NP_PreventRightClickPvPAttack");
